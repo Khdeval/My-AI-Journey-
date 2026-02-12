@@ -3,9 +3,16 @@ import os
 import chromadb
 from openai import OpenAI
 from dotenv import load_dotenv
+from pathlib import Path
 import time
 
-load_dotenv()
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(env_path)
+
+if not os.getenv("OPENAI_API_KEY"):
+    st.error("Missing OPENAI_API_KEY. Add it to .env in the project root.")
+    st.stop()
+
 client = OpenAI()
 
 st.set_page_config(page_title="QA AI Workflow Lab", page_icon="🤖")
