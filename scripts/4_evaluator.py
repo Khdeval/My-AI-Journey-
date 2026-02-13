@@ -3,13 +3,13 @@ from deepeval.metrics import FaithfulnessMetric
 from deepeval.test_case import LLMTestCase
 from dotenv import load_dotenv
 
-dotenv_path = os.path.join(os.path.dirname(__file__), "..", "env", ".env")
+dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(dotenv_path=dotenv_path)
 
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = (os.getenv("OPENAI_API_KEY") or "").strip().strip('"').strip("'")
 if not api_key:
     raise RuntimeError(
-        "OPENAI_API_KEY is missing. Set it in env/.env without quotes or spaces."
+        "OPENAI_API_KEY is missing. Set it in .env in the project root."
     )
 
 def audit_ai_output(user_query, context, ai_response):

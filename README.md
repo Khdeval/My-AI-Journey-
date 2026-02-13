@@ -36,6 +36,9 @@ Run the Ingestion:Bashpython scripts/1_ingest.py
 
 Launch the Orchestrator:Bashstreamlit run app.py
 
+Preflight Auth Check (recommended):
+Bashpython scripts/0_healthcheck.py
+
 📈 Observability & TracingThe application features a Custom Execution Trace. 
 This provides transparency into the "Reasoning Loop," 
 showing:Total LatencyRouter 
