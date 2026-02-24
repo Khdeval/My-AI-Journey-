@@ -54,6 +54,9 @@ To avoid knowledge regression, ingestion supports updates.
 │   ├── 2_router.py
 │   ├── 3_workflow.py
 │   ├── 4_evaluator.py
+│   ├── 5_multi_agent.py
+│   ├── 6_langgraph_flow.py
+│   ├── 7_final_eval.py
 │   └── test_suite.py
 ├── snippets/
 ├── requirements.txt
@@ -103,6 +106,31 @@ What it does:
 
 Note:
 - `scripts/test_suite.py` dynamically loads `scripts/3_workflow.py` via `importlib` because module filenames starting with a digit cannot be imported with standard `from ... import ...` syntax.
+
+## LangGraph Auditor Loop
+
+Run:
+
+```bash
+python scripts/6_langgraph_flow.py
+```
+
+What it does:
+- Runs an Architect → Auditor cycle using LangGraph.
+- Auditor either approves or requests a revision.
+- Loop ends when approved or max revision count is reached.
+
+## Final System Audit (DeepEval)
+
+`scripts/7_final_eval.py` provides `run_final_audit(query, context, output)` to score:
+- retrieval quality (`ContextualRelevancyMetric`)
+- generation honesty (`FaithfulnessMetric`)
+- user satisfaction (`AnswerRelevancyMetric`)
+
+In the Streamlit app, this is integrated as **Run LangGraph + Final Audit**, which:
+- runs `scripts/6_langgraph_flow.py`
+- evaluates the final test plan with `scripts/7_final_eval.py`
+- shows the system health report in the UI
 
 ## Observability & Traceability
 

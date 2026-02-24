@@ -189,3 +189,34 @@ with right_col:
             )
         except Exception as error:
             st.error(f"LangGraph workflow failed: {error}")
+
+    if st.button("Run LangGraph + Final Audit"):
+        try:
+            with st.spinner("Running LangGraph and final audit..."):
+                langgraph_module = load_script_module("6_langgraph_flow.py", "langgraph_flow_eval_module")
+                final_eval_module = load_script_module("7_final_eval.py", "final_eval_module")
+                flow_result = langgraph_module.run_langgraph_workflow(langgraph_requirement)
+                audit_scores = final_eval_module.run_final_audit(
+                    query=langgraph_requirement,
+                    context=langgraph_requirement,
+                    output=flow_result["test_plan"],
+                )
+
+            st.markdown("##### Final Test Plan")
+            st.write(flow_result["test_plan"])
+
+            st.markdown("##### Auditor Feedback")
+            st.info(flow_result["feedback"])
+
+            st.markdown("##### System Health Report")
+            st.json(
+                {
+                    "retrieval_quality": audit_scores["retrieval_quality"],
+                    "generation_honesty": audit_scores["generation_honesty"],
+                    "user_satisfaction": audit_scores["user_satisfaction"],
+                    "revisions_used": flow_result["revision_count"],
+                    "auditor_decision": flow_result["auditor_decision"],
+                }
+            )
+        except Exception as error:
+            st.error(f"LangGraph + final audit failed: {error}")
