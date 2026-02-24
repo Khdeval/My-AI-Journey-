@@ -5,6 +5,17 @@ from openai import OpenAI, AuthenticationError
 from dotenv import load_dotenv
 from pathlib import Path
 import time
+from importlib.util import module_from_spec, spec_from_file_location
+
+
+def load_script_module(script_filename: str, module_name: str):
+    script_path = Path(__file__).resolve().parent / "scripts" / script_filename
+    module_spec = spec_from_file_location(module_name, script_path)
+    if module_spec is None or module_spec.loader is None:
+        raise ImportError(f"Could not load module from {script_path}")
+    module = module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    return module
 
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(env_path)
@@ -99,3 +110,52 @@ if st.button("Generate & Trace"):
         # --- FINAL OUTPUT ---
         st.markdown("### Generated Test Case")
         st.success(output)
+
+st.divider()
+st.subheader("🧪 Integrated Scripts")
+
+left_col, right_col = st.columns(2)
+
+with left_col:
+    st.markdown("#### Batch Evaluation (`test_suite.py`)")
+    if st.button("Run Batch Test Suite"):
+        try:
+            with st.spinner("Running batch tests..."):
+                test_suite_module = load_script_module("test_suite.py", "test_suite_module")
+                batch_results = test_suite_module.run_batch_test()
+
+            if batch_results:
+                st.success(f"Completed {len(batch_results)} test scenarios")
+                st.dataframe(batch_results, use_container_width=True)
+            else:
+                st.warning("Batch test completed, but no results were returned.")
+        except Exception as error:
+            st.error(f"Batch test suite failed: {error}")
+
+with right_col:
+    st.markdown("#### Multi-Agent Review (`5_multi_agent.py`)")
+    multi_agent_requirement = st.text_area(
+        "Requirement for multi-agent review:",
+        value="A login system that requires MFA and SHA-256 password hashing.",
+        key="multi_agent_requirement"
+    )
+
+    if st.button("Run Multi-Agent Workflow"):
+        try:
+            with st.spinner("Running multi-agent workflow..."):
+                multi_agent_module = load_script_module("5_multi_agent.py", "multi_agent_module")
+                review_result = multi_agent_module.run_multi_agent_workflow(multi_agent_requirement)
+
+            st.markdown("##### Architect Plan")
+            st.write(review_result["initial_plan"])
+
+            st.markdown("##### Auditor Review")
+            st.info(review_result["auditor_review"])
+
+            if review_result["refined_plan"]:
+                st.markdown("##### Refined Plan")
+                st.write(review_result["refined_plan"])
+            else:
+                st.success("Plan approved in first pass.")
+        except Exception as error:
+            st.error(f"Multi-agent workflow failed: {error}")

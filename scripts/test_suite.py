@@ -70,5 +70,7 @@ def run_batch_test():
         status = "✅ PASS" if res['passed'] else "❌ FAIL"
         print(f"{status} | Score: {res['score']} | Query: {res['input']}")
 
+    return results
+
 if __name__ == "__main__":
     run_batch_test()
