@@ -159,3 +159,33 @@ with right_col:
                 st.success("Plan approved in first pass.")
         except Exception as error:
             st.error(f"Multi-agent workflow failed: {error}")
+
+    st.markdown("---")
+    st.markdown("#### LangGraph Auditor Loop (`6_langgraph_flow.py`)")
+    langgraph_requirement = st.text_area(
+        "Requirement for LangGraph flow:",
+        value="A login system that requires MFA and SHA-256 password hashing.",
+        key="langgraph_requirement"
+    )
+
+    if st.button("Run LangGraph Workflow"):
+        try:
+            with st.spinner("Running LangGraph workflow..."):
+                langgraph_module = load_script_module("6_langgraph_flow.py", "langgraph_flow_module")
+                flow_result = langgraph_module.run_langgraph_workflow(langgraph_requirement)
+
+            st.markdown("##### Final Test Plan")
+            st.write(flow_result["test_plan"])
+
+            st.markdown("##### Auditor Feedback")
+            st.info(flow_result["feedback"])
+
+            st.markdown("##### Workflow Summary")
+            st.json(
+                {
+                    "revisions_used": flow_result["revision_count"],
+                    "auditor_decision": flow_result["auditor_decision"],
+                }
+            )
+        except Exception as error:
+            st.error(f"LangGraph workflow failed: {error}")
