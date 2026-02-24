@@ -1,47 +1,113 @@
-🚀 AI Workflow Orchestrator: Requirements-to-Test EngineAn enterprise-grade RAG (Retrieval-Augmented Generation) pipeline that automates the generation of software test cases from technical requirements. This project demonstrates the transition from traditional QA to AI Workflow Engineering by implementing intelligent routing, metadata-filtered retrieval, and automated AI-as-a-Judge evaluation.
-🛠️ The StackOrchestration: Python, OpenAI GPT-4oVector Database: ChromaDB (Persistent)Evaluation: DeepEval (Unit Testing for LLMs)Frontend: StreamlitEnvironment: GitHub Codespaces
+# AI Workflow Orchestrator: Requirements-to-Test Engine
 
-🏗️ Architectural Decisions 
+An enterprise-grade RAG (Retrieval-Augmented Generation) pipeline that automates generation of software test cases from technical requirements.
 
-1. Metadata-Aware RoutingInstead of a "flat" search, I implemented an Intent Router.The Problem: Large context windows often lead to "Prompt Noise" where the LLM misses specific requirements.
+This project demonstrates the transition from traditional QA to AI Workflow Engineering with:
+- intelligent routing,
+- metadata-filtered retrieval,
+- and automated AI-as-a-Judge evaluation.
 
-The Solution: A specialized LLM-gate categorizes queries (e.g., Security vs. Technical) before querying the database.Benefit: Increases Context Precision and reduces token costs by filtering the search space in ChromaDB.
+## Stack
 
-2. Hallucination Guardrails (AI-as-a-Judge)To solve the stochastic nature of LLMs, I integrated a formal Evaluation Layer.Mechanism: Every generated test case is audited using a Faithfulness Metric.Validation: The system cross-references the Actual Output against the Retrieval Context. If the faithfulness score is $< 0.7$, the output is flagged for human review.
-   
-3. Change Data Capture (CDC) & Upsert LogicTo prevent Knowledge Regression, the ingestion layer is designed for dynamic updates.Process: Using Persistent ChromaDB, requirements can be "Upserted" (updated/inserted) via the scripts/1_ingest.py pipeline. This ensures the AI always references the latest "Source of Truth."
-   
-📂 Project StructureBash├── data/chroma_db/      # Persistent Vector Store (Long-term memory)
+- Orchestration: Python, OpenAI GPT-4o
+- Vector Database: ChromaDB (persistent)
+- Evaluation: DeepEval (unit-style evaluation for LLM outputs)
+- Frontend: Streamlit
+- Environment: GitHub Codespaces / dev container
 
+## Architectural Decisions
+
+### 1) Metadata-Aware Routing
+
+Instead of flat retrieval, the system uses an intent router.
+
+- Problem: large contexts can introduce prompt noise and reduce precision.
+- Solution: a router classifies each query (for example, `security` vs `technical`) before retrieval.
+- Benefit: better context precision and lower token cost by narrowing ChromaDB search scope.
+
+### 2) Hallucination Guardrails (AI-as-a-Judge)
+
+An evaluation layer audits generated outputs with a faithfulness metric.
+
+- Mechanism: compare generated output against retrieval context.
+- Validation threshold: if score is < 0.7, output is flagged for human review.
+
+### 3) CDC + Upsert Ingestion
+
+To avoid knowledge regression, ingestion supports updates.
+
+- Process: requirements are inserted/updated with upsert behavior in persistent ChromaDB via `scripts/1_ingest.py`.
+- Benefit: generation stays aligned with latest source-of-truth docs.
+
+## Project Structure
+
+```text
+.
+├── app.py
+├── config/
+├── data/
+│   └── chroma_db/
+├── notes/
 ├── scripts/
+│   ├── 0_healthcheck.py
+│   ├── 1_ingest.py
+│   ├── 2_router.py
+│   ├── 3_workflow.py
+│   ├── 4_evaluator.py
+│   └── test_suite.py
+├── snippets/
+├── requirements.txt
+└── README.md
+```
 
-│   ├── 1_ingest.py      # Metadata-driven data ingestion pipeline
+## Getting Started
 
-│   ├── 2_router.py      # Intent classification logic
+1. Install dependencies:
 
-│   ├── 3_workflow.py    # Integrated RAG & Generation engine
+```bash
+pip install -r requirements.txt
+```
 
-│   └── 4_evaluator.py   # DeepEval audit & faithfulness checks
+2. Set environment variables in `.env` (including `OPENAI_API_KEY`).
 
-├── app.py               # Streamlit UI with Execution Tracing
+3. Run preflight auth check (recommended):
 
-└── .env                 # Protected environment variables
+```bash
+python scripts/0_healthcheck.py
+```
 
-🚦 Getting StartedClone the repo:
-Bashgit clone https://github.com/your-username/my-ai-journey-.git
+4. Ingest requirements/documents:
 
-Install Dependencies:Bashpip install -r requirements.txt
+```bash
+python scripts/1_ingest.py
+```
 
-Run the Ingestion:Bashpython scripts/1_ingest.py
+5. Launch the Streamlit app:
 
-Launch the Orchestrator:Bashstreamlit run app.py
+```bash
+streamlit run app.py
+```
 
-Preflight Auth Check (recommended):
-Bashpython scripts/0_healthcheck.py
+## Running the Batch Test Suite
 
-📈 Observability & TracingThe application features a Custom Execution Trace. 
-This provides transparency into the "Reasoning Loop," 
-showing:Total LatencyRouter 
-ClassificationMetadata 
-filter applied
-Specific database chunks retrieved
+Run:
+
+```bash
+python scripts/test_suite.py
+```
+
+What it does:
+- Executes the integrated workflow across three predefined scenarios.
+- Evaluates faithfulness with DeepEval.
+- Prints a final pass/fail report with scores.
+
+Note:
+- `scripts/test_suite.py` dynamically loads `scripts/3_workflow.py` via `importlib` because module filenames starting with a digit cannot be imported with standard `from ... import ...` syntax.
+
+## Observability & Traceability
+
+The app surfaces execution trace details, including:
+- total latency,
+- router classification,
+- metadata filters applied,
+- and retrieved chunks used for generation.
